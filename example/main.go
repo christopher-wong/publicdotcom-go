@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	publicdotcom "github.com/cwong/publicdotcom-go"
+	publicdotcom "github.com/christopher-wong/publicdotcom-go"
 )
 
 func main() {
