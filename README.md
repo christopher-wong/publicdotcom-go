@@ -21,7 +21,6 @@ package main
 
 import (
     "context"
-    "encoding/json"
     "fmt"
     "log"
     "os"
@@ -38,13 +37,11 @@ func main() {
 
     ctx := context.Background()
 
-    // Get portfolio
-    raw, err := client.GetPortfolio(ctx)
+    // Get portfolio — returns *PortfolioResponse directly
+    portfolio, err := client.GetPortfolio(ctx)
     if err != nil {
         log.Fatal(err)
     }
-    var portfolio publicdotcom.PortfolioResponse
-    json.Unmarshal(raw, &portfolio)
 
     fmt.Printf("Buying power: %s\n", portfolio.BuyingPower.BuyingPower)
     for _, p := range portfolio.Positions {
@@ -124,7 +121,7 @@ Based on the [official Postman collection](https://github.com/PublicDotCom/postm
 | `PreflightMultiLegOrder` | Validate a multi-leg options order | `PreflightMultiLegResponse` |
 | `PlaceMultiLegOrder` | Submit a multi-leg options order | `PlaceOrderResponse` |
 
-All methods return `(json.RawMessage, error)`. Typed response structs are provided for unmarshalling.
+All methods return typed response structs directly (e.g. `*PortfolioResponse`, `*Order`). No manual unmarshalling needed.
 
 ## Error Handling
 
@@ -133,7 +130,7 @@ API errors are returned as typed errors. Use `errors.As` to inspect them:
 ```go
 import "errors"
 
-raw, err := client.PlaceOrder(ctx, order)
+resp, err := client.PlaceOrder(ctx, order)
 if err != nil {
     var rateLimited *publicdotcom.RateLimitError
     var authErr *publicdotcom.AuthenticationError

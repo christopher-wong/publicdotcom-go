@@ -1,8 +1,8 @@
 // Package publicdotcom is an unofficial Go client for the Public.com trading API.
 //
 // It covers authentication, account management, portfolio data, market quotes,
-// order placement, and options data. All endpoints return [json.RawMessage];
-// typed response structs are provided for unmarshalling.
+// order placement, and options data. All methods return typed response structs
+// directly.
 //
 // This package is not affiliated with, maintained by, or endorsed by Public Holdings, Inc.
 //

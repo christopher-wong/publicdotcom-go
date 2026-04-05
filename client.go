@@ -259,3 +259,15 @@ func decodeResponse(resp *http.Response, v any) error {
 	}
 	return json.NewDecoder(resp.Body).Decode(v)
 }
+
+// decode unmarshals a json.RawMessage into the given type.
+func decode[T any](raw json.RawMessage, err error) (*T, error) {
+	if err != nil {
+		return nil, err
+	}
+	var v T
+	if err := json.Unmarshal(raw, &v); err != nil {
+		return nil, fmt.Errorf("decode response: %w", err)
+	}
+	return &v, nil
+}

@@ -2,7 +2,6 @@ package publicdotcom
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 	"time"
 )
@@ -98,17 +97,8 @@ func (s *PriceSubscription) run(ctx context.Context) {
 }
 
 func (s *PriceSubscription) poll(ctx context.Context) {
-	raw, err := s.client.GetQuotes(ctx, s.instruments)
+	resp, err := s.client.GetQuotes(ctx, s.instruments)
 	if err != nil {
-		select {
-		case s.updates <- PriceUpdate{Err: err}:
-		default:
-		}
-		return
-	}
-
-	var resp QuoteResponse
-	if err := json.Unmarshal(raw, &resp); err != nil {
 		select {
 		case s.updates <- PriceUpdate{Err: err}:
 		default:
@@ -146,11 +136,11 @@ type OrderUpdate struct {
 // OrderSubscription polls for order status changes and delivers updates via
 // a channel. Create one with [Client.SubscribeOrder].
 type OrderSubscription struct {
-	client   *Client
-	orderID  string
-	interval time.Duration
-	updates  chan OrderUpdate
-	done     chan struct{}
+	client    *Client
+	orderID   string
+	interval  time.Duration
+	updates   chan OrderUpdate
+	done      chan struct{}
 	closeOnce sync.Once
 }
 
@@ -224,17 +214,8 @@ func (s *OrderSubscription) run(ctx context.Context) {
 		case <-s.done:
 			return
 		case <-ticker.C:
-			raw, err := s.client.GetOrder(ctx, s.orderID)
+			order, err := s.client.GetOrder(ctx, s.orderID)
 			if err != nil {
-				select {
-				case s.updates <- OrderUpdate{Err: err}:
-				default:
-				}
-				continue
-			}
-
-			var order Order
-			if err := json.Unmarshal(raw, &order); err != nil {
 				select {
 				case s.updates <- OrderUpdate{Err: err}:
 				default:
@@ -244,7 +225,7 @@ func (s *OrderSubscription) run(ctx context.Context) {
 
 			if order.Status != lastStatus {
 				select {
-				case s.updates <- OrderUpdate{Order: order, Previous: lastStatus}:
+				case s.updates <- OrderUpdate{Order: *order, Previous: lastStatus}:
 				default:
 				}
 				lastStatus = order.Status
