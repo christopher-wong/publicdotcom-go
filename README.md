@@ -19,15 +19,21 @@ client := publicdotcom.NewClient(secretKey, accountID)
 client.Authenticate(ctx)
 
 // Get portfolio
-portfolio, err := client.GetPortfolio(ctx)
+raw, err := client.GetPortfolio(ctx)
+
+// Unmarshal into typed response
+var portfolio publicdotcom.PortfolioResponse
+json.Unmarshal(raw, &portfolio)
 
 // Get quotes
-quotes, err := client.GetQuotes(ctx, []publicdotcom.Instrument{
+raw, err = client.GetQuotes(ctx, []publicdotcom.Instrument{
     {Symbol: "AAPL", Type: "EQUITY"},
 })
+var quotes publicdotcom.QuoteResponse
+json.Unmarshal(raw, &quotes)
 
 // Place an order
-resp, err := client.PlaceOrder(ctx, publicdotcom.OrderRequest{
+raw, err = client.PlaceOrder(ctx, publicdotcom.OrderRequest{
     OrderID:    "uuid-here",
     Instrument: publicdotcom.Instrument{Symbol: "AAPL", Type: "EQUITY"},
     OrderSide:  "BUY",
@@ -38,23 +44,23 @@ resp, err := client.PlaceOrder(ctx, publicdotcom.OrderRequest{
 })
 ```
 
-All responses are returned as `json.RawMessage` since the API does not publish response schemas.
+Responses are returned as `json.RawMessage`. Typed response structs are provided for all endpoints — unmarshal into them as shown above.
 
 ## API Coverage
 
-Based on the [official Postman collection](https://github.com/PublicDotCom/postman-collection):
+Based on the [official Postman collection](https://github.com/PublicDotCom/postman-collection) and [API docs](https://public.com/api/docs):
 
-| Category | Methods |
-|---|---|
-| Auth | `Authenticate` |
-| Accounts | `GetAccounts` |
-| Portfolio | `GetPortfolio` |
-| History | `GetHistory` |
-| Instruments | `GetInstruments`, `GetInstrument` |
-| Market Data | `GetQuotes`, `GetOptionExpirations`, `GetOptionChain` |
-| Orders | `PreflightOrder`, `PlaceOrder`, `GetOrder`, `CancelOrder` |
-| Multi-leg Orders | `PreflightMultiLegOrder`, `PlaceMultiLegOrder` |
-| Options | `GetOptionGreeks` |
+| Category | Methods | Response Type |
+|---|---|---|
+| Auth | `Authenticate` | — |
+| Accounts | `GetAccounts` | `AccountsResponse` |
+| Portfolio | `GetPortfolio` | `PortfolioResponse` |
+| History | `GetHistory` | `HistoryResponse` |
+| Instruments | `GetInstruments`, `GetInstrument` | `InstrumentsResponse`, `InstrumentDetail` |
+| Market Data | `GetQuotes`, `GetOptionExpirations`, `GetOptionChain` | `QuoteResponse`, `OptionExpirationsResponse`, `OptionChainResponse` |
+| Orders | `PreflightOrder`, `PlaceOrder`, `ReplaceOrder`, `GetOrder`, `CancelOrder` | `PreflightResponse`, `PlaceOrderResponse`, `Order` |
+| Multi-leg Orders | `PreflightMultiLegOrder`, `PlaceMultiLegOrder` | `PreflightMultiLegResponse`, `PlaceOrderResponse` |
+| Options | `GetOptionGreeks` | `GreeksResponse` |
 
 ## References
 
