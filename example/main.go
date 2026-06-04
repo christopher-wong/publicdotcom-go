@@ -151,4 +151,5 @@ func main() {
 	}
 	fmt.Println()
 	log.Printf("example completed successfully")
+	log.Printf("shutting down")
 }
